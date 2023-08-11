@@ -46,7 +46,7 @@ void optionMenuShow()
     printf("\n  (t) New task   (d) Delete   (e) Edit   (q) Quit\n");
 }
 
-Task* createNewTask(Task* taskList) 
+Task* createTask(Task* taskList) 
 {
     int nc, prio = 2;
 
@@ -96,7 +96,7 @@ void memoryRelease(Task* taskList)
     }
 }
 
-Task* taskDelete(Task* taskList) 
+Task* deleteTask(Task* taskList) 
 {
     Task* taskForDeletion;
     char confirmation = 'n';
@@ -111,6 +111,28 @@ Task* taskDelete(Task* taskList)
     }
 
     return taskList;
+}
+
+void editTask(Task* taskList)
+{
+    int option, nc, prio;
+
+    //show the task that is being edited
+    printf("(1) Edit name   (2) Edit priority   (3) Back\n");
+    scanf("%d", &option);
+    switch (option)
+    {
+    case 1:
+        //needs buffer for stdin clearing
+        taskList->TaskName = getTaskName();
+        break;
+    case 2:
+        nc = scanf("%d", &prio);
+        if (nc == 1) taskList->prioLvl = prio;
+        break;
+    default:
+        break;
+    }
 }
 
 int main() 
@@ -133,19 +155,19 @@ int main()
             scanf("%c", &buffer); //scanf sucks, see alternatives
             fflush(stdin);
             system("clear");
-            taskListStart = createNewTask(taskListStart);
+            taskListStart = createTask(taskListStart);
             break;
         case 'd':
             scanf("%c", &buffer); //scanf sucks, see alternatives
             fflush(stdin);
             system("clear");
-            taskListStart = taskDelete(taskListStart);
+            taskListStart = deleteTask(taskListStart);
             break;
         case 'e':
             scanf("%c", &buffer); //scanf sucks, see alternatives
             fflush(stdin);
             system("clear");
-            //taskEdit();
+            editTask(taskListStart);
             break;
         case 'q':
             system("clear");
