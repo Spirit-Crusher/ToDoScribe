@@ -8,7 +8,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "ToDoLib.h"
+
+
+void stdinCleaner()
+{
+    char buffer;
+    scanf("%c", &buffer); //scanf sucks, see alternatives
+}
 
 char* getTaskName() 
 {
@@ -41,6 +49,22 @@ void welcomeScreen()
     printf("                                                       |__/\n\n");
 }
 
+Task* taskSort(Task** currentTask, Task* taskList)
+{
+    if(taskList != NULL && taskList->prioLvl < (*currentTask)->prioLvl) //high value => low prio
+    {
+        (*currentTask)->nextTask = taskList->nextTask;
+        taskList->nextTask = *currentTask;
+    }
+    else
+    {
+        (*currentTask)->nextTask = taskList;
+        taskList = *currentTask;
+    }
+
+    return taskList;
+}
+
 void optionMenuShow()
 {
     printf("\n  (t) New task   (d) Delete   (e) Edit   (q) Quit\n");
@@ -52,7 +76,6 @@ Task* createTask(Task* taskList)
 
     Task* newTask = (Task*) malloc(sizeof(Task));
     newTask->prioLvl = prio;
-    newTask->nextTask = taskList;
 
     printf("New task: ");
     newTask->TaskName = getTaskName();
@@ -60,8 +83,10 @@ Task* createTask(Task* taskList)
     printf("Priority Level (1-Critical   2-Normal [default]   3-Low): ");
     nc = scanf("%d", &prio);
     if (nc == 1) newTask->prioLvl = prio;
+
+    taskList = taskSort(&newTask, taskList);
     
-    return newTask;
+    return taskList;
 }
 
 void showCurrentTasks(Task* taskList)
@@ -81,6 +106,7 @@ void showCurrentTasks(Task* taskList)
             printf("Low\n");
             break;
         }
+        printf("\n\n");
         taskList = taskList->nextTask;
     }
 }
@@ -115,19 +141,22 @@ Task* deleteTask(Task* taskList)
 
 void editTask(Task* taskList)
 {
-    int option, nc, prio;
+    int nc, prio;
+    char option;
 
     //show the task that is being edited
     printf("(1) Edit name   (2) Edit priority   (3) Back\n");
-    scanf("%d", &option);
+    option = getchar();
     switch (option)
     {
-    case 1:
-        //needs buffer for stdin clearing
+    case '1':
+        printf("New name: ");
+        stdinCleaner();
         taskList->TaskName = getTaskName();
         break;
-    case 2:
-        nc = scanf("%d", &prio);
+    case '2':
+        printf("\nNew priority level: ");
+        nc = scanf(" %d", &prio);
         if (nc == 1) taskList->prioLvl = prio;
         break;
     default:
@@ -135,10 +164,12 @@ void editTask(Task* taskList)
     }
 }
 
+
+
 int main() 
 {
     Task* taskListStart = NULL;
-    char keyPressed, buffer;
+    char keyPressed;
     bool exitApp = false;
 
     while(!exitApp)
@@ -152,20 +183,23 @@ int main()
         switch (keyPressed)
         {
         case 't':
-            scanf("%c", &buffer); //scanf sucks, see alternatives
-            fflush(stdin);
+            stdinCleaner();
             system("clear");
             taskListStart = createTask(taskListStart);
             break;
         case 'd':
-            scanf("%c", &buffer); //scanf sucks, see alternatives
-            fflush(stdin);
+            stdinCleaner();
             system("clear");
+            if(taskListStart == NULL)
+            {
+                printf("[INFO] No tasks to be deleted.\n");
+                sleep(2);
+                break;
+            }
             taskListStart = deleteTask(taskListStart);
             break;
         case 'e':
-            scanf("%c", &buffer); //scanf sucks, see alternatives
-            fflush(stdin);
+            stdinCleaner();
             system("clear");
             editTask(taskListStart);
             break;
