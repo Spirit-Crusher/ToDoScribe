@@ -43,7 +43,7 @@ void printTask (Task* task)
         printf("Low\n");
         break;
     }
-    printf("\n\n");
+    printf("\n");
 }
 
 char* getTaskName() 
@@ -68,33 +68,44 @@ char* getTaskName()
     return input;
 }
 
-/* void sortTasks(Task** taskListStart)
+Task* swapTasks(Task* Task1, Task* Task2)
 {
-    bool switched, first;
-    Task **currentTask, **followingTask;
-    Task **tempTask;
+    Task* temp = Task2->nextTask;
+    Task2->nextTask = Task1;
+    Task1->nextTask = temp;
+    return Task2;
+}
 
-    do
-    {
-        switched = false;
-        first = true;   //signals if its the first inside loop iteration
-        currentTask = taskListStart;
-        followingTask = &(*taskListStart)->nextTask;
-        while (*followingTask != NULL)
-        {
-            if((*currentTask)->prioLvl > (*followingTask)->prioLvl)
-            {
-                (*currentTask)->nextTask = (*followingTask)->nextTask;
-                if(*followingTask != NULL) (*followingTask)->nextTask = *currentTask;
-                if(!first && *tempTask != NULL) (*tempTask)->nextTask = *followingTask;
+void sortTasks(Task** head)
+{
+    Task** currentTask;
+    int i, j;
+    bool swapped;
+ 
+    for (i = 0; i <= totalTasks; i++) {
+ 
+        currentTask = head;
+        swapped = false;
+ 
+        for (j = 0; j < totalTasks - i - 1; j++) {
+ 
+            Task* Task1 = *currentTask;
+            Task* Task2 = Task1->nextTask;
+ 
+            if (Task1->prioLvl > Task2->prioLvl) {
+ 
+                /* update the link after swapping */
+                *currentTask = swapTasks(Task1, Task2);
+                swapped = true;
             }
-            tempTask = currentTask;
-            currentTask = followingTask;
-            if(*followingTask != NULL) followingTask = &(*followingTask)->nextTask;
-            first = false;
+ 
+            currentTask = &(*currentTask)->nextTask;
         }
-    } while(switched);
-} */
+        /* break if the loop ended without any swap */
+        if (!swapped)
+            break;
+    }
+}
 
 void optionMenuShow()
 {
@@ -108,17 +119,31 @@ void showTotalTasks()
 
 Task* createTask(Task* taskList) 
 {
-    int nc, prio = 2;
+    char prio = '2';
 
     Task* newTask = (Task*) malloc(sizeof(Task));
-    newTask->prioLvl = prio;
+    newTask->prioLvl = prio-'0';
 
     printf("New task: ");
     newTask->TaskName = getTaskName();
 
     printf("Priority Level (1-Critical   2-Normal [default]   3-Low): ");
-    nc = scanf("%d", &prio);
-    if (nc == 1) newTask->prioLvl = prio;
+    prio = getchar();
+
+    switch (prio)
+    {
+    case '1':
+        newTask->prioLvl = prio-'0';    //converting char to int is needed (prio-'0) achieves it
+        break;
+    case '2':
+        newTask->prioLvl = prio-'0';
+        break;
+    case '3':
+        newTask->prioLvl = prio-'0';
+        break;
+    default:
+        break;
+    }
 
     newTask->nextTask = taskList;
     taskList = newTask;
@@ -130,22 +155,14 @@ Task* createTask(Task* taskList)
 
 void showCurrentTasks(Task* taskList)
 {
-    int currentPrio, taskNumber = 1;
-    Task* currentTask;
+    int taskNumber;
+    Task* currentTask = taskList;
 
-    for(currentPrio = 1; currentPrio <= 3; currentPrio++)
+    for (taskNumber = 1; currentTask != NULL; taskNumber++)
     {
-        currentTask = taskList;
-        while (currentTask != NULL)
-        {
-            if(currentTask->prioLvl == currentPrio)
-            {
-                printf(" (%d) ", taskNumber);
-                taskNumber++;
-                printTask(currentTask);
-            }
-            currentTask = currentTask->nextTask;
-        }
+        printf(" (%d) ", taskNumber);
+        printTask(currentTask);
+        currentTask = currentTask->nextTask;
     }
 }
 
@@ -160,47 +177,97 @@ void memoryRelease(Task* taskList)
     }
 }
 
-Task* deleteTask(Task* taskList) 
+void removeTaskFromList(Task** head, int taskNumber)
 {
-    Task* taskForDeletion = taskList, *currentTask = taskList/* , *previousTask = NULL */;
-    char confirmation = 'n';
-/*     char* providedName;
+    Task** selectedTask = head;
 
-    showCurrentTasks(taskList);
-    printf("Which task do you want to delete? (name)\n");
-    providedName = getTaskName();
-
-    while (currentTask != NULL)
-    {
-        if(!strcmp(currentTask->TaskName, providedName))
-        {
-            taskForDeletion = currentTask;
-            break;
-        }
-        else currentTask = currentTask->nextTask;
-
-        if(currentTask == NULL)
-        {
-            printf("\n[WARNING] No task with provided name\n");
-            return taskList;
-        }
-    } */
-    
-    printTask(taskForDeletion);
-
-    printf("Are you sure you want to delete this task? (y/N): ");
-    confirmation = getchar();
-    if (confirmation == 'y' || confirmation == 'Y')
-    {
-        taskList = taskList->nextTask;
-        free(taskForDeletion);
-        totalTasks--;
+    if((*selectedTask)->nextTask == NULL)
+    { 
+        free(*selectedTask);
+        *head = NULL;
     }
+    else
+    {
 
-    return taskList;
+        for (int i = 1; i < taskNumber-1; i++) selectedTask = &(*selectedTask)->nextTask;
+        
+        Task *previousTask, *removedTask;
+
+        previousTask = *selectedTask;
+        removedTask = previousTask->nextTask;
+
+        previousTask->nextTask = removedTask->nextTask;
+        free(removedTask);
+    }
+    totalTasks--;
 }
 
-void editTask(Task* taskList)
+void deleteTask(Task** head)
+{
+    Task* taskForDeletion = *head;
+    char confirmation = 'n';
+    int selectedNumber, nc;
+
+    showCurrentTasks(*head);
+    printf("Which task do you want to delete? (task number): ");
+    nc = scanf("%d", &selectedNumber);
+    printf("\n");
+    if(nc != 1) printf("\n[WARNING] Unknown task\n");
+    else if (selectedNumber > totalTasks || selectedNumber < 1) printf("\n[WARNING] Unknown task\n");
+    else
+    {
+        for (int i = 1; i < selectedNumber; i++) taskForDeletion = taskForDeletion->nextTask;
+        
+        printTask(taskForDeletion);
+
+        printf("Are you sure you want to delete this task? (y/N): ");
+        stdinCleaner();
+        confirmation = getchar();
+        if (confirmation == 'y' || confirmation == 'Y') removeTaskFromList(head, selectedNumber);
+    }
+}
+
+void editTask(Task** head)
+{
+    Task** selectedTask = head;
+    Task* taskForEditing = *head;
+    int selectedNumber, nc, prio;
+    char option;
+
+    showCurrentTasks(*head);
+    printf("Which task do you want to edit? (task number): ");
+    nc = scanf("%d", &selectedNumber);
+    printf("\n");
+    if(nc != 1) printf("\n[WARNING] Unknown task\n");
+    else if (selectedNumber > totalTasks || selectedNumber < 1) printf("\n[WARNING] Unknown task\n");
+    else
+    {
+        for (int i = 1; i < selectedNumber; i++) selectedTask = &(*selectedTask)->nextTask;
+        taskForEditing = *selectedTask;
+
+        printTask(taskForEditing);
+        printf("(1) Edit name   (2) Edit priority   (3) Back\n");
+        stdinCleaner();
+        option = getchar();
+        switch (option)
+        {
+        case '1':
+            printf("New name: ");
+            stdinCleaner();
+            taskForEditing->TaskName = getTaskName();
+            break;
+        case '2':
+            printf("\nNew priority level: ");
+            nc = scanf(" %d", &prio);
+            if (nc == 1) taskForEditing->prioLvl = prio;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+/* void editTask(Task* taskList)
 {
     int nc, prio;
     char option;
@@ -225,7 +292,7 @@ void editTask(Task* taskList)
     default:
         break;
     }
-}
+} */
 
 
 
@@ -240,6 +307,7 @@ int main()
         system("clear");
         welcomeScreen();
         showTotalTasks();
+        sortTasks(&taskListStart);
         showCurrentTasks(taskListStart);
         optionMenuShow();
 
@@ -260,12 +328,12 @@ int main()
                 sleep(2);
                 break;
             }
-            taskListStart = deleteTask(taskListStart);
+            deleteTask(&taskListStart);
             break;
         case 'e':
             stdinCleaner();
             system("clear");
-            editTask(taskListStart);
+            editTask(&taskListStart);
             break;
         case 'q':
             system("clear");
