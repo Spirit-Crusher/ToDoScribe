@@ -1,7 +1,7 @@
 //     _____    ___      ___         _ _                 ___
 //    |_   _|__|   \ ___/ __| __ _ _(_) |__  ___   ___  | _ )_  _   _ _ __ 
 //      | |/ _ \ |) / _ \__ \/ _| '_| | '_ \/ -_) |___| | _ \ || | | '_/ _|
-//     |_|\___/___/\___/___/\__|_| |_|_.__/\___|       |___/\_, | |_| \__|
+//      |_|\___/___/\___/___/\__|_| |_|_.__/\___|       |___/\_, | |_| \__|
 //                                                           |__/
 
 #include <stdio.h>
@@ -57,6 +57,7 @@ char* getTaskName()
         if(fgets(buffer, CHUNK, stdin) == NULL)
         {
             printf("[ERROR] Input malfunction\n");
+            sleep(2);
             exit(0);
         } 
         bufferLen = strlen(buffer);
@@ -212,8 +213,16 @@ void deleteTask(Task** head)
     printf("Which task do you want to delete? (task number): ");
     nc = scanf("%d", &selectedNumber);
     printf("\n");
-    if(nc != 1) printf("\n[WARNING] Unknown task\n");
-    else if (selectedNumber > totalTasks || selectedNumber < 1) printf("\n[WARNING] Unknown task\n");
+    if(nc != 1)
+    {
+        printf("\n[WARNING] Unknown task\n");
+        sleep(2);
+    }
+    else if (selectedNumber > totalTasks || selectedNumber < 1)
+    {
+        printf("\n[WARNING] Unknown task\n");
+        sleep(2);
+    } 
     else
     {
         for (int i = 1; i < selectedNumber; i++) taskForDeletion = taskForDeletion->nextTask;
