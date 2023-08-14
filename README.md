@@ -1,6 +1,6 @@
 ### Description
 
-ToDoScribe is a free and open-source CLI To-Do List manager.
+ToDoScribe is a free and open-source CLI To-Do List manager built in C.
 
 ### Features
 
