@@ -25,7 +25,7 @@ void welcomeScreen()
 void stdinCleaner()
 {
     char buffer;
-    scanf("%c", &buffer); //scanf sucks, see alternatives
+    scanf("%c", &buffer);
 }
 
 void printTask (Task* task)
@@ -134,7 +134,7 @@ Task* createTask(Task* taskList)
     switch (prio)
     {
     case '1':
-        newTask->prioLvl = prio-'0';    //converting char to int is needed (prio-'0) achieves it
+        newTask->prioLvl = prio-'0';    //converting char to int is needed, prio-'0' achieves it
         break;
     case '2':
         newTask->prioLvl = prio-'0';
@@ -172,6 +172,7 @@ void memoryRelease(Task* taskList)
     Task* auxPointer;
     while (taskList != NULL)
     {
+        free(taskList->TaskName); //name was allocated separately therefore must be freed separately aswell
         auxPointer = taskList;
         taskList = taskList->nextTask;
         free(auxPointer);
@@ -184,6 +185,7 @@ void removeTaskFromList(Task** head, int taskNumber)
 
     if((*selectedTask)->nextTask == NULL)
     { 
+        free((*selectedTask)->TaskName);
         free(*selectedTask);
         *head = NULL;
     }
@@ -198,6 +200,7 @@ void removeTaskFromList(Task** head, int taskNumber)
         removedTask = previousTask->nextTask;
 
         previousTask->nextTask = removedTask->nextTask;
+        free(removedTask->TaskName);
         free(removedTask);
     }
     totalTasks--;
@@ -215,21 +218,24 @@ void deleteTask(Task** head)
     printf("\n");
     if(nc != 1)
     {
-        printf("\n[WARNING] Unknown task\n");
+        system("clear");
+        printf("\n[ERROR] Unknown task\n");
         sleep(2);
     }
     else if (selectedNumber > totalTasks || selectedNumber < 1)
     {
-        printf("\n[WARNING] Unknown task\n");
+        system("clear");
+        printf("\n[ERROR] Unknown task\n");
         sleep(2);
     } 
     else
     {
         for (int i = 1; i < selectedNumber; i++) taskForDeletion = taskForDeletion->nextTask;
         
+        system("clear");
         printTask(taskForDeletion);
 
-        printf("Are you sure you want to delete this task? (y/N): ");
+        printf("[WARNING] Are you sure you want to delete this task? (y/N): ");
         stdinCleaner();
         confirmation = getchar();
         if (confirmation == 'y' || confirmation == 'Y') removeTaskFromList(head, selectedNumber);
@@ -247,8 +253,18 @@ void editTask(Task** head)
     printf("Which task do you want to edit? (task number): ");
     nc = scanf("%d", &selectedNumber);
     printf("\n");
-    if(nc != 1) printf("\n[WARNING] Unknown task\n");
-    else if (selectedNumber > totalTasks || selectedNumber < 1) printf("\n[WARNING] Unknown task\n");
+    if(nc != 1)
+    {
+        system("clear");
+        printf("\n[ERROR] Unknown task\n");
+        sleep(2);
+    }
+    else if (selectedNumber > totalTasks || selectedNumber < 1)
+    {
+        system("clear");
+        printf("\n[ERROR] Unknown task\n");
+        sleep(2);
+    }
     else
     {
         for (int i = 1; i < selectedNumber; i++) selectedTask = &(*selectedTask)->nextTask;
@@ -261,6 +277,7 @@ void editTask(Task** head)
         switch (option)
         {
         case '1':
+            free(taskForEditing->TaskName);
             printf("New name: ");
             stdinCleaner();
             taskForEditing->TaskName = getTaskName();
@@ -275,35 +292,6 @@ void editTask(Task** head)
         }
     }
 }
-
-/* void editTask(Task* taskList)
-{
-    int nc, prio;
-    char option;
-    Task* taskForEditing = taskList;       //atm you can only edit the last task
-
-    printTask(taskForEditing);
-
-    printf("(1) Edit name   (2) Edit priority   (3) Back\n");
-    option = getchar();
-    switch (option)
-    {
-    case '1':
-        printf("New name: ");
-        stdinCleaner();
-        taskForEditing->TaskName = getTaskName();
-        break;
-    case '2':
-        printf("\nNew priority level: ");
-        nc = scanf(" %d", &prio);
-        if (nc == 1) taskForEditing->prioLvl = prio;
-        break;
-    default:
-        break;
-    }
-} */
-
-
 
 int main() 
 {
@@ -333,11 +321,12 @@ int main()
             system("clear");
             if(taskListStart == NULL)
             {
-                printf("[INFO] No tasks to be deleted.\n");
+                system("clear");
+                printf("[ERROR] No tasks to be deleted.\n");
                 sleep(2);
                 break;
             }
-            deleteTask(&taskListStart);
+            else deleteTask(&taskListStart);
             break;
         case 'e':
             stdinCleaner();
