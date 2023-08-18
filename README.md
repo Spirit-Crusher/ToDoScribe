@@ -5,8 +5,8 @@ ToDoScribe is a free and open-source CLI To-Do List manager built in C.
 ### Features
 
 - [x] Add, edit and remove tasks. Edits include changing name and priority level.
-- [x] Show all current tasks by priority level.
-- [ ] Save everything to a file so that tasks can be reloaded.
+- [x] Show all current tasks by priority level (auto-(re)sorting).
+- [x] Add total tasks counter.
 
 
 ### To-dos
@@ -15,6 +15,7 @@ ToDoScribe is a free and open-source CLI To-Do List manager built in C.
 - [x] Improve deletion/editing by enabling task selection making it so the user can interact with any task.
 - [x] Display the total amount of tasks.
 - [x] Show the task for deletion on the screen in the confirmation dialog.
+- [ ] Save everything to a file so that tasks can be reloaded.
 
 ### Bugs and code improvements
 
